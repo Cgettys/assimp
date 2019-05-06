@@ -1016,23 +1016,21 @@ void ColladaExporter::WriteGeometryLibrary()
 void ColladaExporter::WriteGeometry( size_t pIndex)
 {
     const aiMesh* mesh = mScene->mMeshes[pIndex];
-    const std::string idstr = GetMeshId( pIndex);
-    const std::string idstrEscaped = XMLEscape(idstr);
-    std::string nameStrEscaped;
+    std::string idstr;
     if (pProperties->GetPropertyBool("COLLADA_EXPORT_USE_MESH_NAMES",false)){
-        nameStrEscaped = XMLEscape(mesh->mName.C_Str());
+        idstr= mesh->mName.C_Str();
     }
     // If the property is not set or the mesh is nameless, fallback to old behavior
-    if (nameStrEscaped.empty()) {
-        nameStrEscaped = idstrEscaped + "_name";
+    if (idstr.empty()) {
+        idstr = GetMeshId( pIndex);
     }
-
+    std::string idstrEscaped = XMLEscape(idstr);
 
     if ( mesh->mNumFaces == 0 || mesh->mNumVertices == 0 )
         return;
 
     // opening tag
-    mOutput << startstr << "<geometry id=\"" << idstrEscaped << "\" name=\"" << nameStrEscaped << "\" >" << endstr;
+    mOutput << startstr << "<geometry id=\"" << idstrEscaped << "\" name=\"" << idstrEscaped <<"_name\" >" << endstr;
     PushTag();
 
     mOutput << startstr << "<mesh>" << endstr;

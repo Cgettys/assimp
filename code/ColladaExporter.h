@@ -145,7 +145,6 @@ protected:
     std::string GetMeshId( size_t pIndex) const {
         return std::string( "meshId" ) + to_string(pIndex);
     }
-    ExportProperties* pProperties;
 public:
     /// Stringstream to write all output into
     std::stringstream mOutput;
@@ -162,6 +161,9 @@ protected:
 
     /// The scene to be written
     const aiScene* mScene;
+
+    // Properties to control export.
+    const ExportProperties* pProperties;
     bool mSceneOwned;
 
     /// current line start string, contains the current indentation for simple stream insertion
