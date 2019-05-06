@@ -69,13 +69,13 @@ namespace Assimp
 
 // ------------------------------------------------------------------------------------------------
 // Worker function for exporting a scene to Collada. Prototyped and registered in Exporter.cpp
-void ExportSceneCollada(const char* pFile, IOSystem* pIOSystem, const aiScene* pScene, const ExportProperties* /*pProperties*/)
+void ExportSceneCollada(const char* pFile, IOSystem* pIOSystem, const aiScene* pScene, const ExportProperties* pProperties)
 {
     std::string path = DefaultIOSystem::absolutePath(std::string(pFile));
     std::string file = DefaultIOSystem::completeBaseName(std::string(pFile));
 
     // invoke the exporter
-    ColladaExporter iDoTheExportThing( pScene, pIOSystem, path, file);
+    ColladaExporter iDoTheExportThing( pScene, pIOSystem, path, file,pProperties);
     
     if (iDoTheExportThing.mOutput.fail()) {
         throw DeadlyExportError("output data creation failed. Most likely the file became too large: " + std::string(pFile));
@@ -97,7 +97,7 @@ void ExportSceneCollada(const char* pFile, IOSystem* pIOSystem, const aiScene* p
 
 // ------------------------------------------------------------------------------------------------
 // Constructor for a specific scene to export
-ColladaExporter::ColladaExporter( const aiScene* pScene, IOSystem* pIOSystem, const std::string& path, const std::string& file) : mIOSystem(pIOSystem), mPath(path), mFile(file)
+ColladaExporter::ColladaExporter( const aiScene* pScene, IOSystem* pIOSystem, const std::string& path, const std::string& file, const ExportProperties* properties) : mIOSystem(pIOSystem), mPath(path), mFile(file), pProperties(properties)
 {
     // make sure that all formatting happens using the standard, C locale and not the user's current locale
     mOutput.imbue( std::locale("C") );
@@ -988,12 +988,21 @@ void ColladaExporter::WriteGeometry( size_t pIndex)
     const aiMesh* mesh = mScene->mMeshes[pIndex];
     const std::string idstr = GetMeshId( pIndex);
     const std::string idstrEscaped = XMLEscape(idstr);
+    std::string nameStrEscaped;
+    if (pProperties->GetPropertyBool("COLLADA_EXPORT_USE_MESH_NAMES",false)){
+        nameStrEscaped = XMLEscape(mesh->mName.C_Str());
+    }
+    // If the property is not set or the mesh is nameless, fallback to old behavior
+    if (nameStrEscaped.empty()) {
+        nameStrEscaped = idstrEscaped + "_name";
+    }
+
 
     if ( mesh->mNumFaces == 0 || mesh->mNumVertices == 0 )
         return;
 
     // opening tag
-    mOutput << startstr << "<geometry id=\"" << idstrEscaped << "\" name=\"" << idstrEscaped << "_name\" >" << endstr;
+    mOutput << startstr << "<geometry id=\"" << idstrEscaped << "\" name=\"" << nameStrEscaped << "\" >" << endstr;
     PushTag();
 
     mOutput << startstr << "<mesh>" << endstr;

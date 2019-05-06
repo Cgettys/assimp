@@ -69,7 +69,7 @@ class ColladaExporter
 {
 public:
     /// Constructor for a specific scene to export
-    ColladaExporter( const aiScene* pScene, IOSystem* pIOSystem, const std::string& path, const std::string& file);
+    ColladaExporter( const aiScene* pScene, IOSystem* pIOSystem, const std::string& path, const std::string& file, const ExportProperties *properties);
 
     /// Destructor
     virtual ~ColladaExporter();
@@ -145,7 +145,7 @@ protected:
     std::string GetMeshId( size_t pIndex) const {
         return std::string( "meshId" ) + to_string(pIndex);
     }
-
+    ExportProperties* pProperties;
 public:
     /// Stringstream to write all output into
     std::stringstream mOutput;
